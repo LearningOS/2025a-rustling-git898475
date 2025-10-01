@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,15 +69,71 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    fn append_node(&mut self,node_ptr:NonNull<Node<T>>){
+        unsafe {
+            (*node_ptr.as_ptr()).next=None;
+        }
+        match self.end {
+            None=>self.start=Some(node_ptr),
+            Some(end_ptr)=>{
+                unsafe{
+                    (*end_ptr.as_ptr()).next=Some(node_ptr);
+                }
+            }
+        }
+        self.end=Some(node_ptr);
+        self.length+=1;
+    }
+    fn append_list(&mut self,mut head_ptr:Option<NonNull<Node<T>>>){
+        while let Some(node)=head_ptr{
+            unsafe {
+                let next=(*node.as_ptr()).next;
+                (*node.as_ptr()).next=None;
+                self.append_node(node);
+                head_ptr=next;
+            }
+        }
+    }
+
+}
+impl<T:std::cmp::PartialOrd> LinkedList<T>  {
+    pub fn merge(mut list_a:LinkedList<T>,mut list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut result=LinkedList::new();
+        let mut a_ptr=list_a.start;
+        let mut b_ptr=list_b.start;
+
+        while let (Some(node_a),Some(node_b)) = (a_ptr,b_ptr) {
+            unsafe {
+                if (*node_a.as_ptr()).val<=(*node_b.as_ptr()).val{
+                    
+                    let next=(*node_a.as_ptr()).next;
+                    (*node_a.as_ptr()).next=None;
+                    result.append_node(node_a);
+                    a_ptr=next;
+                } else{
+                    
+                    let next=(*node_b.as_ptr()).next;
+                    (*node_b.as_ptr()).next=None;
+                    result.append_node(node_b);
+                    b_ptr=next;
+                }
+            }
         }
-	}
+        if a_ptr!=None{
+            result.append_list(a_ptr);
+        } else{
+            result.append_list(b_ptr);
+        }
+        list_a.start = None;
+        list_a.end = None;
+        list_a.length = 0;
+        list_b.start = None;
+        list_b.end = None;
+        list_b.length = 0;
+        result
+    }
 }
 
 impl<T> Display for LinkedList<T>
@@ -91,7 +147,22 @@ where
         }
     }
 }
+impl<T> Drop for LinkedList<T> {
+    fn drop(&mut self){
+        let mut current=self.start;
+        while let Some(ptr) =current  {
+            unsafe {
+                let next =(*ptr.as_ptr()).next;
+                drop(Box::from_raw(ptr.as_ptr()));
+                current=next;
+            }
 
+        }
+        self.start=None;
+        self.end=None;
+        self.length=0;
+    }
+}
 impl<T> Display for Node<T>
 where
     T: Display,
