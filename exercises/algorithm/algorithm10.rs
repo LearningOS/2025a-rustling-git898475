@@ -1,7 +1,8 @@
 /*
 	graph
-	This problem requires you to implement a basic graph function
+	This problem requires you to implement a basic graph functio
 */
+
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -28,32 +29,21 @@ impl Graph for UndirectedGraph {
         &self.adjacency_table
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
+        //TODO
+        let (node1, node2, weight) = edge;
         
-       /*  if let Some(vec0) = self.adjacency_table.get_mut(edge.0) {
-            (*vec0).push((edge.1.to_string(),edge.2));
-        } else{
-            let mut vec0=Vec::<(String,i32)>::new();
-            vec0.push((edge.1.to_string(),edge.2));
-            self.adjacency_table.insert(edge.0.to_string(),vec0);
-        }
-
-        if let Some(vec1) = self.adjacency_table.get_mut(edge.1) {
-            (*vec1).push((edge.0.to_string(),edge.2));
-        } else{
-            let mut vec1=Vec::<(String,i32)>::new();
-            vec1.push((edge.0.to_string(),edge.2));
-            self.adjacency_table.insert(edge.1.to_string(),vec1);
-        }*/
-        self.add_node(edge.0);
-        self.add_node(edge.1);
-        let vec0=self.adjacency_table_mutable().get_mut(edge.0).unwrap();
-        if !vec0.iter().any(|(x,_)| x==edge.1){
-            vec0.push((edge.1.to_string(),edge.2));
-        }
-        let vec1=self.adjacency_table_mutable().get_mut(edge.1).unwrap();
-        if !vec1.iter().any(|(x,_)| x==edge.0){
-            vec1.push((edge.0.to_string(),edge.2));
-        }
+        // 确保两个节点都存在
+        self.add_node(node1);
+        self.add_node(node2);
+        
+        // 获取邻接表的可变引用
+        let adj_table = self.adjacency_table_mutable();
+        
+        // 添加 node1 -> node2 的边
+        adj_table.get_mut(node1).unwrap().push((node2.to_string(), weight));
+        
+        // 添加 node2 -> node1 的边（因为是无向图）
+        adj_table.get_mut(node2).unwrap().push((node1.to_string(), weight));
     }
 }
 pub trait Graph {
@@ -62,25 +52,31 @@ pub trait Graph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
         //TODO
-        if self.contains(node){
-            return false;
-        }
-        else{
-            self.adjacency_table_mutable().insert(node.to_string(),Vec::new());
-            return true;
+        let adj_table = self.adjacency_table_mutable();
+        // 如果节点不存在，添加一个空邻接列表
+        if !adj_table.contains_key(node) {
+            adj_table.insert(node.to_string(), Vec::new());
+            true
+        } else {
+            false
         }
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        self.add_node(edge.0);
-        self.add_node(edge.1);
-        let vec0=self.adjacency_table_mutable().get_mut(edge.0).unwrap();
-        if !vec0.iter().any(|(x,_)| x==edge.1){
-            vec0.push((edge.1.to_string(),edge.2));
-        }
-        let vec1=self.adjacency_table_mutable().get_mut(edge.1).unwrap();
-        if !vec1.iter().any(|(x,_)| x==edge.0){
-            vec1.push((edge.0.to_string(),edge.2));
-        }
+        //TODO
+        let (node1, node2, weight) = edge;
+        
+        // 确保两个节点都存在
+        self.add_node(node1);
+        self.add_node(node2);
+        
+        // 获取邻接表的可变引用
+        let adj_table = self.adjacency_table_mutable();
+        
+        // 添加 node1 -> node2 的边
+        adj_table.get_mut(node1).unwrap().push((node2.to_string(), weight));
+        
+        // 添加 node2 -> node1 的边（因为是无向图）
+        adj_table.get_mut(node2).unwrap().push((node1.to_string(), weight));
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
